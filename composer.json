@@ -4,6 +4,12 @@
     "license": "MIT",
     "require": {
         "doctrine/orm": "2.4.*",
-        "symfony/dependency-injection": "^3.3"
+        "symfony/dependency-injection": "^3.3",
+        "symfony/routing": "^3.3",
+        "symfony/http-foundation": "^3.3",
+        "symfony/http-kernel": "^3.3"
+    },
+    "autoload": {
+        "psr-4": { "": "app/" }
     }
 }

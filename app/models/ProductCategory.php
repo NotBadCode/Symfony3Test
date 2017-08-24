@@ -4,30 +4,27 @@ namespace app\models;
 
 /**
  * Class Product
+ * @Entity @Table(name="products_category")
  */
 class ProductCategory
 {
     /**
      * @var integer
+     * @Id @Column(type="integer") @GeneratedValue
      */
     protected $id;
 
     /**
      * @var string
+     * @Column(type="string")
      */
     protected $title;
 
-    public function setFields($data)
-    {
-        foreach ($data as $key => $value) {
-            $data[$key]=trim($value);
-        }
-
-        $this->fileid = $data['fileid'];
-        $this->name = $data['name'];
-        $this->text = $data['text'];
-        $this->path = $data['path'];
-    }
+    /**
+     * @ManyToOne(targetEntity="Product", mappedBy="reporter")
+     * @var Product[]
+     **/
+    protected $products = null;
 
     /**
      * @param integer $id
@@ -59,5 +56,21 @@ class ProductCategory
     public function setTitle($title)
     {
         $this->title = $title;
+    }
+
+    /**
+     * @param Product $product
+     */
+    public function addProduct(Product $product)
+    {
+        $this->products[] = $product;
+    }
+
+    /**
+     * @return Product[]
+     */
+    public function getProducts()
+    {
+        return $this->products;
     }
 }

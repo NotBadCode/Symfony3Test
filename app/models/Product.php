@@ -4,40 +4,33 @@ namespace app\models;
 
 /**
  * Class Product
+ * @Entity @Table(name="products")
  */
 class Product
 {
     /**
      * @var integer
+     * @Id @Column(type="integer") @GeneratedValue
      */
     protected $id;
 
     /**
      * @var string
+     * @Column(type="string")
      */
     protected $title;
 
     /**
      * @var float
+     * @Column(type="decimal")
      */
     protected $price;
 
     /**
      * @var integer
+     * @Column(type="integer")
      */
     protected $category_id;
-
-    public function setFields($data)
-    {
-        foreach ($data as $key => $value) {
-            $data[$key]=trim($value);
-        }
-
-        $this->fileid = $data['fileid'];
-        $this->name = $data['name'];
-        $this->text = $data['text'];
-        $this->path = $data['path'];
-    }
 
     /**
      * @param integer $id

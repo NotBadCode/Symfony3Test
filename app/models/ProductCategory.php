@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+
 /**
  * Class Product
  * @Entity @Table(name="products_category")

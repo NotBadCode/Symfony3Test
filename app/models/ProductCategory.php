@@ -22,7 +22,7 @@ class ProductCategory
     protected $title;
 
     /**
-     * @ManyToOne(targetEntity="Product", mappedBy="reporter")
+     * @ManyToOne(targetEntity="Product")
      * @var Product[]
      **/
     protected $products = null;

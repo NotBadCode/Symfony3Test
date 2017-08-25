@@ -1,6 +1,10 @@
 <?php
 
 namespace app\models;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\NotNull;
+use \Symfony\Component\Validator\Mapping\ClassMetadata;
 
 /**
  * Class Product
@@ -31,6 +35,12 @@ class Product
      * @Column(type="integer")
      */
     protected $category_id;
+
+    /**
+     * @ManyToOne(targetEntity="ProductCategory")
+     * @var ProductCategory
+     **/
+    protected $category = null;
 
     /**
      * @param integer $id
@@ -94,5 +104,21 @@ class Product
     public function getCategoryId()
     {
         return $this->category_id;
+    }
+
+    public static function loadValidatorMetadata(ClassMetadata $metadata)
+    {
+//        $metadata->addPropertyConstraint('title', new NotBlank());
+//        $metadata->addPropertyConstraint('title', new NotNull());
+//        $metadata->addPropertyConstraint('title', new Length(255));
+//
+//        $metadata->addPropertyConstraint('price', new NotBlank());
+//        $metadata->addPropertyConstraint('price', new NotNull());
+//        $metadata->addPropertyConstraint('price', new Length(255));
+//
+//        $metadata->addPropertyConstraint('category_id', new NotBlank());
+//        $metadata->addPropertyConstraint('category_id', new NotNull());
+//        $metadata->addPropertyConstraint('category_id', new Length(255));
+
     }
 }

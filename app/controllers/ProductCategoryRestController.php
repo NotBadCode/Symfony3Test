@@ -2,12 +2,15 @@
 
 namespace app\controllers;
 
+use app\forms\ProductCategoryForm;
+use app\models\ProductCategory;
+
 /**
  * Class ProductCategoryRestController
  */
 class ProductCategoryRestController extends RestController
 {
-    protected $formType;
+    protected $formType = ProductCategoryForm::class;
 
-    protected $entityClass = \app\models\ProductCategory::class;
+    protected $entityClass = ProductCategory::class;
 }

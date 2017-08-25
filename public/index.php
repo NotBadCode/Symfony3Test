@@ -4,16 +4,20 @@ require '../vendor/autoload.php';
 
 use Symfony\Component\HttpFoundation\Request;
 
-$routes        = include __DIR__ . '/../config/routes.php';
-$entityManager = include __DIR__ . '/../config/db.php';
+try {
+    $container = include __DIR__ . '/../config/container.php';
 
-$container = include __DIR__ . '/../config/container.php';
+    $request = Request::createFromGlobals();
 
-$request = Request::createFromGlobals();
+    /**
+     * @var \Symfony\Component\HttpFoundation\Response $response
+     */
+    $response = $container->get('base')->handle($request);
 
-/**
- * @var \Symfony\Component\HttpFoundation\Response $response
- */
-$response = $container->get('base')->handle($request);
-
-$response->send();
+    $response->send();
+} catch (Exception $exception) {
+    echo '<pre>';
+    var_dump($exception->getMessage());
+    echo '</pre>';
+    exit;
+}

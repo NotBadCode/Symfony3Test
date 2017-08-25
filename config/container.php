@@ -7,6 +7,10 @@ use Symfony\Component\HttpKernel;
 use Symfony\Component\Routing;
 use Symfony\Component\EventDispatcher;
 use app\Base;
+use app\services\Doctrine;
+
+$routes = include __DIR__ . '/../config/routes.php';
+$db     = include __DIR__ . '/../config/db.php';
 
 $containerBuilder = new DependencyInjection\ContainerBuilder();
 
@@ -34,5 +38,16 @@ $containerBuilder->register('base', Base::class)
                                     new Reference('request_stack'),
                                     new Reference('argument_resolver'),
                                 ]);
+
+$containerBuilder->register('form_factory', \Symfony\Component\Form\FormFactory::class)
+                 ->setArguments([
+                                    new Reference('dispatcher'),
+                                    new Reference('controller_resolver'),
+                                    new Reference('request_stack'),
+                                    new Reference('argument_resolver'),
+                                ]);
+
+$containerBuilder->register('doctrine', Doctrine::class)
+                 ->setArguments($db);
 
 return $containerBuilder;

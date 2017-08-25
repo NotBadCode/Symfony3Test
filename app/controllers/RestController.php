@@ -3,11 +3,16 @@
 namespace app\controllers;
 
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
 use Symfony\Component\Form\FormFactoryInterface;
 
+use Symfony\Component\Form\Forms;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\Validator\Validation;
 
 abstract class RestController
 {
@@ -33,14 +38,17 @@ abstract class RestController
      */
     protected $entityManager;
 
-    /**
-     * @param FormFactoryInterface $formFactory
-     * @param EntityManager        $entityManager
-     */
-    public function __construct(FormFactoryInterface $formFactory, EntityManager $entityManager)
+
+    public function __construct()
     {
-        $this->formFactory   = $formFactory;
-        $this->entityManager = $entityManager;
+        $container = include __DIR__ . '/../../config/container.php';
+        $this->setContainer($container);
+        $this->formFactory = Forms::createFormFactoryBuilder()
+                                  ->addExtension(
+                                      new ValidatorExtension(Validation::createValidator()))
+                                  ->getFormFactory();
+
+        $this->entityManager = $this->container->get('doctrine')->entityManager;
     }
 
     /**
@@ -51,7 +59,7 @@ abstract class RestController
      */
     public function createForm($data = null, $options = [])
     {
-        return $this->formFactory->create(new $this->formType(), $data, $options);
+        return $this->formFactory->create($this->formType, $data, $options);
     }
 
     /**
@@ -72,27 +80,26 @@ abstract class RestController
 
     /**
      * @param Request $request
-     * @return array
+     * @return JsonResponse
      */
     public function listAction(Request $request)
     {
         $offset = $request->headers->get('offset', 0);
         $limit  = $request->headers->get('limit', 10);
 
-        return $this->getRepository()->findBy(
+        $result = $this->getRepository()->findBy(
             [],
             null,
             $limit,
             $offset
         );
+
+        return new JsonResponse($result);
     }
 
     /**
-     * @param int $id
-     *
-     * @return object
-     *
-     * @View(serializerGroups={"show"}, serializerEnableMaxDepthChecks=true)
+     * @param integer $id
+     * @return JsonResponse
      */
     public function getAction($id)
     {
@@ -102,15 +109,12 @@ abstract class RestController
             throw new NotFoundHttpException(sprintf('%s#%s not found', $this->entityClass, $id));
         }
 
-        return $object;
+        return new JsonResponse($object);
     }
 
     /**
      * @param Request $request
-     *
-     * @return \Symfony\Component\Form\Form|\Symfony\Component\Form\FormInterface
-     *
-     * @View()
+     * @return JsonResponse
      */
     public function postAction(Request $request)
     {
@@ -123,17 +127,18 @@ abstract class RestController
             $this->getEntityManager()->persist($object);
             $this->getEntityManager()->flush($object);
 
-            return $object;
+            $result = $object;
+        } else {
+            $result = (string)$form->getErrors(true);
         }
 
-        return $form;
+        return new JsonResponse($result);
     }
 
     /**
-     * @param Request $request
-     * @param integer $id
-     *
-     * @return null|object|\Symfony\Component\Form\FormInterface
+     * @param Request  $request
+     * @param  integer $id
+     * @return JsonResponse
      */
     public function putAction(Request $request, $id)
     {
@@ -150,19 +155,18 @@ abstract class RestController
             $this->getEntityManager()->persist($object);
             $this->getEntityManager()->flush($object);
 
-            return $object;
+            $result = $object;
+        } else {
+            $result = $form->getErrors();
         }
 
-        return $form;
+        return new JsonResponse($result);
     }
 
     /**
-     * @param Request $request
-     * @param         $id
-     *
-     * @View()
-     *
-     * @return object|\Symfony\Component\Form\FormInterface
+     * @param Request  $request
+     * @param  integer $id
+     * @return JsonResponse
      */
     public function patchAction(Request $request, $id)
     {
@@ -179,18 +183,17 @@ abstract class RestController
             $this->getEntityManager()->persist($object);
             $this->getEntityManager()->flush($object);
 
-            return $object;
+            $result = $object;
+        } else {
+            $result = $form->getErrors();
         }
 
-        return $form;
+        return new JsonResponse($result);
     }
 
     /**
-     * @param int $id
-     *
-     * @return array
-     *
-     * @View()
+     * @param $id
+     * @return JsonResponse
      */
     public function deleteAction($id)
     {
@@ -204,7 +207,7 @@ abstract class RestController
         $this->getEntityManager()->remove($object);
         $this->getEntityManager()->flush($object);
 
-        return ['success' => true];
+        return new JsonResponse(['success' => true]);
     }
 
 }

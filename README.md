@@ -41,4 +41,6 @@ Post example:
        "price": 128,
        "categories": [{"title": "categoryTitle"}
     }
-```
+```  
+
+POST, PUT, PATCH, DELETE needs Bearer Authorization with user token.

@@ -26,11 +26,6 @@ $routes->add('product.put',
                  '_controller' => 'app\controllers\ProductRestController::putAction',
              ], [], [], '', [], ['PUT']));
 
-$routes->add('product.set_category',
-             new Routing\Route('/product/set-category/{id}', [
-                 '_controller' => 'app\controllers\ProductRestController::setCategoryAction',
-             ], [], [], '', [], ['PUT']));
-
 $routes->add('product.delete',
              new Routing\Route('/product/{id}', [
                  '_controller' => 'app\controllers\ProductRestController::deleteAction',

@@ -16,8 +16,5 @@ try {
 
     $response->send();
 } catch (Exception $exception) {
-    echo '<pre>';
-    var_dump($exception->getMessage());
-    echo '</pre>';
-    exit;
+    echo $exception->getMessage();
 }

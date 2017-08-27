@@ -4,15 +4,16 @@ namespace app\models;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\NotNull;
-use \Symfony\Component\Validator\Mapping\ClassMetadata;
+use Symfony\Component\Validator\Mapping\ClassMetadata;
+use Symfony\Component\Validator\Constraints\NotBlank;
+
 
 /**
  * Class Product
- * @Entity @Table(name="products")
+ * @Entity @Table(name="categories")
  */
-class Product implements \JsonSerializable
+class Category implements \JsonSerializable
 {
     /**
      * @var integer
@@ -27,27 +28,14 @@ class Product implements \JsonSerializable
     protected $title;
 
     /**
-     * @var float
-     * @Column(type="decimal")
+     * @var ArrayCollection|Product[]
      */
-    protected $price;
-
-    /**
-     * @ManyToMany(targetEntity="Category", cascade={"persist"})
-     * @JoinTable(name="product_category",
-     *      joinColumns={@JoinColumn(name="product_id", referencedColumnName="id")},
-     *      inverseJoinColumns={@JoinColumn(name="category_id", referencedColumnName="id")}
-     *      )
-     *
-     * @var Category[]
-     **/
-    protected $categories;
+    protected $products;
 
     public function __construct()
     {
-        $this->categories = new ArrayCollection();
+        $this->products = new ArrayCollection();
     }
-
 
     /**
      * @param integer $id
@@ -82,42 +70,21 @@ class Product implements \JsonSerializable
     }
 
     /**
-     * @param float $price
+     * @param Product $product
      */
-    public function setPrice($price)
+    public function addProduct(Product $product)
     {
-        $this->price = $price;
+        if (!$this->products->contains($product)) {
+            $this->products->add($product);
+        }
     }
 
     /**
-     * @return float
+     * @return Product[]|ArrayCollection
      */
-    public function getPrice()
+    public function getProducts()
     {
-        return $this->price;
-    }
-
-    public function addCategory(Category $category)
-    {
-        $category->addProduct($this);
-
-        $this->categories->add($category);
-    }
-
-    /**
-     * @param Category $category
-     */
-    public function removeCategory(Category $category)
-    {
-        $this->categories->removeElement($category);
-    }
-
-    /**
-     * @return Category[]|ArrayCollection
-     */
-    public function getCategories()
-    {
-        return $this->categories;
+        return $this->products;
     }
 
     /**
@@ -140,9 +107,8 @@ class Product implements \JsonSerializable
     public function jsonSerialize()
     {
         return json_encode([
-                               'id'         => $this->id,
-                               'title'      => $this->title,
-                               'categories' => $this->getCategories()->toArray(),
+                               'id'    => $this->id,
+                               'title' => $this->title,
                            ]);
     }
 }

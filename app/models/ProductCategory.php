@@ -16,16 +16,17 @@ class ProductCategory
     protected $id;
 
     /**
-     * @var string
-     * @Column(type="string")
+     * @var integer
+     * @Column(type="integer")
      */
-    protected $title;
+    protected $product_id;
 
     /**
-     * @ManyToOne(targetEntity="Product")
-     * @var Product[]
-     **/
-    protected $products = null;
+     * @var integer
+     * @Column(type="integer")
+     */
+    protected $category_id;
+
 
     /**
      * @param integer $id
@@ -44,34 +45,34 @@ class ProductCategory
     }
 
     /**
-     * @return string
+     * @return integer
      */
-    public function getTitle()
+    public function getProductId()
     {
-        return $this->title;
+        return $this->product_id;
     }
 
     /**
-     * @param string $title
+     * @param integer $product_id
      */
-    public function setTitle($title)
+    public function setProductId($product_id)
     {
-        $this->title = $title;
+        $this->product_id = $product_id;
     }
 
     /**
-     * @param Product $product
+     * @return integer
      */
-    public function addProduct(Product $product)
+    public function getCategoryId()
     {
-        $this->products[] = $product;
+        return $this->category_id;
     }
 
     /**
-     * @return Product[]
+     * @param integer $category_id
      */
-    public function getProducts()
+    public function setCategoryId($category_id)
     {
-        return $this->products;
+        $this->category_id = $category_id;
     }
 }

@@ -2,11 +2,17 @@
 
 namespace app\models;
 
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+
+
 /**
  * Class User
- * @Entity @Table(name="user")
+ * @ORM\Entity(repositoryClass="app\repositories\UserRepository")
+ * @Entity @Table(name="users")
  */
-class User
+class User implements UserInterface, \Serializable
 {
     /**
      * @var integer
@@ -18,13 +24,19 @@ class User
      * @var string
      * @Column(type="string")
      */
-    protected $login;
+    protected $username;
 
     /**
      * @var string
      * @Column(type="string")
      */
     protected $password;
+
+    /**
+     * @var string
+     * @Column(type="string")
+     */
+    protected $token;
 
     /**
      * @param integer $id
@@ -45,17 +57,17 @@ class User
     /**
      * @return string
      */
-    public function getLogin()
+    public function getUsername()
     {
-        return $this->login;
+        return $this->username;
     }
 
     /**
-     * @param string $login
+     * @param string $username
      */
-    public function setLogin($login)
+    public function setUsername($username)
     {
-        $this->login = $login;
+        $this->username = $username;
     }
 
     /**
@@ -74,4 +86,55 @@ class User
         $this->password = $password;
     }
 
+    /**
+     * @return string
+     */
+    public function getToken()
+    {
+        return $this->token;
+    }
+
+    /**
+     * @param string $token
+     */
+    public function setToken($token)
+    {
+        $this->token = $token;
+    }
+
+    public function getRoles()
+    {
+        return ['ROLE_USER'];
+    }
+
+    /**
+     * @return string
+     */
+    public function serialize()
+    {
+        return serialize([
+                             $this->id,
+                             $this->username,
+                         ]);
+    }
+
+    /**
+     * @param string $serialized
+     */
+    public function unserialize($serialized)
+    {
+        list (
+            $this->id,
+            $this->username,
+            ) = unserialize($serialized);
+    }
+
+    public function eraseCredentials()
+    {
+    }
+
+    public function getSalt()
+    {
+        return null;
+    }
 }

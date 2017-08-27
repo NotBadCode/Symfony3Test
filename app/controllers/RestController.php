@@ -2,19 +2,18 @@
 
 namespace app\controllers;
 
+use app\services\BearerAuthorization;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\Form\Extension\Validator\ValidatorExtension;
-use Symfony\Component\Form\FormFactoryInterface;
-
 use Symfony\Component\Form\Forms;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Validation;
 
-abstract class RestController
+abstract class RestController implements ContainerAwareInterface
 {
     use ContainerAwareTrait;
 
@@ -38,17 +37,28 @@ abstract class RestController
      */
     protected $entityManager;
 
+    /**
+     * @var BearerAuthorization
+     */
+    protected $authorization;
 
-    public function __construct()
+    /**
+     * Sets the container.
+     *
+     * @param ContainerInterface|null $container A ContainerInterface instance or null
+     */
+    public function setContainer(ContainerInterface $container = null)
     {
-        $container = include __DIR__ . '/../../config/container.php';
-        $this->setContainer($container);
+        $this->container = $container;
+
         $this->formFactory = Forms::createFormFactoryBuilder()
                                   ->addExtension(
                                       new ValidatorExtension(Validation::createValidator()))
                                   ->getFormFactory();
 
         $this->entityManager = $this->container->get('doctrine')->entityManager;
+
+        $this->authorization = $this->container->get('authorization');
     }
 
     /**
@@ -106,7 +116,7 @@ abstract class RestController
         $object = $this->getRepository()->find($id);
 
         if (!$object) {
-            throw new NotFoundHttpException(sprintf('%s#%s not found', $this->entityClass, $id));
+            return new JsonResponse(['result' => false], 405);
         }
 
         return new JsonResponse($object);
@@ -118,21 +128,27 @@ abstract class RestController
      */
     public function postAction(Request $request)
     {
+        if (!$this->authorization->checkAuth($request)) {
+            return new JsonResponse(['result' => false], 401);
+        }
+
         $object = new $this->entityClass();
 
         $form = $this->createForm($object);
-        $form->submit($request);
+        $data = json_decode($request->getContent(), true);
+        $form->submit($data);
 
         if ($form->isValid()) {
             $this->getEntityManager()->persist($object);
             $this->getEntityManager()->flush($object);
-
-            $result = $object;
         } else {
-            $result = (string)$form->getErrors(true);
+            return new JsonResponse([
+                                        'result' => false,
+                                        'errors' => (string)$form->getErrors(true)
+                                    ], 500);
         }
 
-        return new JsonResponse($result);
+        return new JsonResponse($object);
     }
 
     /**
@@ -142,25 +158,31 @@ abstract class RestController
      */
     public function putAction(Request $request, $id)
     {
+        if (!$this->authorization->checkAuth($request)) {
+            return new JsonResponse(['result' => false], 401);
+        }
+
         $object = $this->getRepository()->find($id);
 
-        if (!$object) {
-            throw new NotFoundHttpException(sprintf('%s#%s not found', $this->entityClass, $id));
+        if (null === $object) {
+            return new JsonResponse(['result' => false], 405);
         }
 
         $form = $this->createForm($object);
-        $form->submit($request);
+        $data = json_decode($request->getContent(), true);
+        $form->submit($data);
 
         if ($form->isValid()) {
             $this->getEntityManager()->persist($object);
             $this->getEntityManager()->flush($object);
-
-            $result = $object;
         } else {
-            $result = $form->getErrors();
+            return new JsonResponse([
+                                        'result' => false,
+                                        'errors' => (string)$form->getErrors(true)
+                                    ], 500);
         }
 
-        return new JsonResponse($result);
+        return new JsonResponse($object);
     }
 
     /**
@@ -170,44 +192,53 @@ abstract class RestController
      */
     public function patchAction(Request $request, $id)
     {
+        if (!$this->authorization->checkAuth($request)) {
+            return new JsonResponse(['result' => false], 401);
+        }
+
         $object = $this->getRepository()->find($id);
 
-        if (!$object) {
-            throw new NotFoundHttpException(sprintf('%s#%s not found', $this->entityClass, $id));
+        if (null === $object) {
+            return new JsonResponse(['result' => false], 405);
         }
 
         $form = $this->createForm($object);
-        $form->submit($request, false);
+        $data = json_decode($request->getContent(), true);
+        $form->submit($data);
 
         if ($form->isValid()) {
             $this->getEntityManager()->persist($object);
             $this->getEntityManager()->flush($object);
-
-            $result = $object;
         } else {
-            $result = $form->getErrors();
+            return new JsonResponse([
+                                        'result' => false,
+                                        'errors' => (string)$form->getErrors(true)
+                                    ], 500);
         }
 
-        return new JsonResponse($result);
+        return new JsonResponse($object);
     }
 
     /**
-     * @param $id
+     * @param Request $request
+     * @param         $id
      * @return JsonResponse
      */
-    public function deleteAction($id)
+    public function deleteAction(Request $request, $id)
     {
+        if (!$this->authorization->checkAuth($request)) {
+            return new JsonResponse(['result' => false], 401);
+        }
 
         $object = $this->getRepository()->find($id);
 
-        if (!$object) {
-            throw new NotFoundHttpException(sprintf('%s#%s not found', $this->entityClass, $id));
+        if (null === $object) {
+            return new JsonResponse(['result' => false], 405);
         }
 
         $this->getEntityManager()->remove($object);
         $this->getEntityManager()->flush($object);
 
-        return new JsonResponse(['success' => true]);
+        return new JsonResponse(['result' => true]);
     }
-
 }

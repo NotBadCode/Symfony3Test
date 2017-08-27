@@ -34,9 +34,11 @@ class CategoryRestController extends RestController
         $limit  = $request->headers->get('limit', 10);
 
         $repository = $this->entityManager->getRepository(Product::class);
-        $qb = $repository->createQueryBuilder('prod');
+        $qb         = $repository->createQueryBuilder('prod');
         $qb->join('prod.categories', 'cat')
-           ->where($qb->expr()->eq('cat.id', $id));
+           ->where($qb->expr()->eq('cat.id', $id))
+           ->setFirstResult($offset)
+           ->setMaxResults($limit);
         $result = $qb->getQuery()->execute();
 
         return new JsonResponse($result);

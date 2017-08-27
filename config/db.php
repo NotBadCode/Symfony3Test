@@ -3,8 +3,8 @@
 return [
     [
         'dbname'   => 'etest',
-        'user'     => 'root',
-        'password' => '11',
+        'user'     => '',
+        'password' => '',
         'host'     => 'localhost',
         'driver'   => 'pdo_mysql',
     ],

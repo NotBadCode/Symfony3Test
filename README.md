@@ -1,4 +1,4 @@
-# Etest
+Реализация тестового задания. Простой REST CRUD на Symfony3
 
 **Installation:**
 
